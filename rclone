@@ -1,0 +1,40 @@
+#!/bin/sh
+if [ ! -d /root/.config/rclone ] ; then
+    mkdir -p /root/.config/rclone
+fi
+
+if [ ! -f /root/.config/rclone/rclone.conf ] ; then
+cat <<EOF > /root/.config/rclone/rclone.conf
+[s3]
+type = s3
+env_auth = false
+access_key_id = ${PLUGIN_AWS_ACCESS_KEY_ID:-${AWS_ACCESS_KEY_ID}}
+secret_access_key = ${PLUGIN_AWS_ACCESS_KEY_ID:-${AWS_ACCESS_KEY_ID}}
+region = ${PLUGIN_AWS_REGION:-${AWS_REGION:-"us-east-1"}}
+endpoint = 
+location_constraint = 
+acl = ${PLUGIN_AWS_ACL:-${AWS_ACL}}
+server_side_encryption = 
+storage_class = ${PLUGIN_AWS_STORAGE_CLASS:-${AWS_STORAGE_CLASS}}
+
+[gs]
+type = google cloud storage
+client_id = 
+client_secret = 
+project_number = p${PLUGIN_GCS_PROJECT_ID:-${GCS_PROJECT_ID}}
+service_account_file = /tmp/google-credentials.json
+object_acl = ${PLUGIN_GCS_OBJECT_ACL:-${GCS_OBJECT_ACL}}
+bucket_acl = ${PLUGIN_GCS_BUCKET_ACL:-${GCS_BUCKET_ACL}}
+location = 
+storage_class = ${PLUGIN_GCS_STORAGE_CLASS:-${GCS_STORAGE_CLASS}}
+token = 
+EOF
+fi
+
+if [ ! -f /tmp/google-credentials.json ] ; then
+cat <<EOF > /tmp/google-credentials.json
+${PLUGIN_GOOGLE_CREDENTIALS:-${GOOGLE_CREDENTIALS}}
+EOF
+fi
+
+exec /usr/local/bin/_rclone "$@"
